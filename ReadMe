@@ -1,0 +1,282 @@
+# 🔐 API de Gestion des Utilisateurs
+
+> Projet 2 — Java Spring Boot + Spring Security + JWT
+
+API REST sécurisée permettant de gérer des utilisateurs avec authentification par token JWT.
+
+---
+
+## 📌 Table des matières
+
+- [Stack technologique](#stack-technologique)
+- [Prérequis](#prérequis)
+- [Installation et démarrage](#installation-et-démarrage)
+- [Tester l'authentification](#tester-lauthentification)
+- [Endpoints de l'API](#endpoints-de-lapi)
+- [Comptes de test](#comptes-de-test)
+- [Comment fonctionne JWT](#comment-fonctionne-jwt)
+- [Structure du projet](#structure-du-projet)
+
+---
+
+## 🛠️ Stack technologique
+
+| Technologie         | Version | Rôle                                          |
+|---------------------|---------|-----------------------------------------------|
+| Java                | 17      | Langage de programmation                      |
+| Spring Boot         | 3.2.0   | Framework principal                           |
+| Spring Security     | 6.2.0   | Authentification et autorisation              |
+| JWT (JJWT)          | 0.11.5  | Génération et validation des tokens           |
+| BCrypt              | —       | Hachage sécurisé des mots de passe            |
+| Spring Data JPA     | 3.2.0   | Persistance ORM                               |
+| H2 Database         | latest  | Base de données en mémoire (dev)              |
+| Lombok              | latest  | Réduction du code boilerplate                 |
+| SpringDoc OpenAPI   | 2.3.0   | Documentation Swagger avec support JWT        |
+| JUnit 5 + Mockito   | latest  | Tests unitaires                               |
+
+---
+
+## ✅ Prérequis
+
+- **Java 17+** → [Télécharger](https://adoptium.net/)
+- **Maven 3.9+** → [Télécharger](https://maven.apache.org/download.cgi)
+
+```bash
+java -version    # java version "17.x.x"
+mvn -version     # Apache Maven 3.9.x
+```
+
+---
+
+## 🚀 Installation et démarrage
+
+```bash
+# 1. Cloner
+git clone https://github.com/kfokam48/user-api.git
+cd user-api
+
+# 2. Compiler
+mvn clean install
+
+# 3. Lancer
+mvn spring-boot:run
+```
+
+L'API démarre sur **http://localhost:8080**
+
+---
+
+## 🔑 Tester l'authentification
+
+### Méthode 1 — Via Swagger UI (recommandée)
+
+1. Ouvrir **http://localhost:8080/swagger-ui.html**
+
+2. **S'inscrire** (ou utiliser un compte de test) :
+   - Cliquer sur `POST /api/v1/auth/login`
+   - Cliquer **Try it out**
+   - Saisir le corps :
+     ```json
+     {
+       "email": "kpambahypolite1@gmail.com",
+       "motDePasse": "Admin@1234"
+     }
+     ```
+   - Cliquer **Execute**
+   - **Copier** le token JWT dans la réponse :
+     ```json
+     { "data": { "token": "eyJhbGciOiJIUzI1NiJ9...." } }
+     ```
+
+3. **Autoriser** : Cliquer sur le bouton 🔒 **Authorize** (en haut à droite)
+   - Saisir : `Bearer eyJhbGciOiJIUzI1NiJ9....`
+   - Cliquer **Authorize** puis **Close**
+
+4. ✅ Tous les endpoints protégés sont maintenant accessibles !
+
+---
+
+### Méthode 2 — Via cURL
+
+**Étape 1 : Se connecter et récupérer le token**
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@kfokam.dev","motDePasse":"Admin@1234"}'
+```
+
+Réponse :
+```json
+{
+  "success": true,
+  "message": "Connexion réussie. Token valide 24h.",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9BRE1JTiJ9...",
+    "tokenType": "Bearer",
+    "expiresIn": 86400,
+    "email": "admin@kfokam.dev",
+    "nom": "Administrateur KFOKAM48",
+    "role": "ROLE_ADMIN"
+  }
+}
+```
+
+**Étape 2 : Utiliser le token pour les requêtes suivantes**
+```bash
+# Remplacer TOKEN par la valeur récupérée à l'étape 1
+TOKEN="eyJhbGciOiJIUzI1NiJ9..."
+
+# Lister les utilisateurs
+curl http://localhost:8080/api/v1/users \
+  -H "Authorization: Bearer $TOKEN"
+
+# Récupérer un utilisateur
+curl http://localhost:8080/api/v1/users/1 \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+### Méthode 3 — Via Postman
+
+1. Faire une requête `POST http://localhost:8080/api/v1/auth/login`
+2. Body → raw → JSON :
+   ```json
+   {"email": "alice@email.com", "motDePasse": "Password@1"}
+   ```
+3. Copier le token de la réponse
+4. Pour les requêtes suivantes → onglet **Authorization** → Type : **Bearer Token**
+5. Coller le token
+
+---
+
+## 🔗 Endpoints de l'API
+
+### Publics (sans token)
+
+| Méthode | Endpoint                  | Description            |
+|---------|---------------------------|------------------------|
+| `POST`  | `/api/v1/auth/register`   | Créer un compte        |
+| `POST`  | `/api/v1/auth/login`      | Se connecter (→ token) |
+
+### Protégés (token JWT requis)
+
+| Méthode   | Endpoint               | Description                   | Rôle requis |
+|-----------|------------------------|-------------------------------|-------------|
+| `GET`     | `/api/v1/users`        | Lister tous les utilisateurs  | USER        |
+| `GET`     | `/api/v1/users/{id}`   | Voir un utilisateur           | USER        |
+| `PUT`     | `/api/v1/users/{id}`   | Modifier un utilisateur       | USER        |
+| `DELETE`  | `/api/v1/users/{id}`   | Supprimer un utilisateur      | **ADMIN**   |
+
+---
+
+## 👥 Comptes de test
+
+Ces comptes sont créés automatiquement au démarrage :
+
+| Rôle       | Email               | Mot de passe  |
+|------------|---------------------|---------------|
+| ROLE_ADMIN | admin@kfokam.dev    | Admin@1234    |
+| ROLE_USER  | alice@email.com     | Password@1    |
+| ROLE_USER  | bob@email.com       | Password@2    |
+
+---
+
+## 🛡️ Comment fonctionne JWT
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  FLUX D'AUTHENTIFICATION             │
+├─────────────────────────────────────────────────────┤
+│  1. Client → POST /auth/login {email, motDePasse}   │
+│  2. Spring Security vérifie email + BCrypt          │
+│  3. Si OK → serveur génère un token JWT signé       │
+│  4. Token retourné au client                        │
+│                                                     │
+│  5. Client → GET /users (Authorization: Bearer JWT) │
+│  6. JwtAuthenticationFilter extrait le token        │
+│  7. JwtService valide la signature et l'expiration  │
+│  8. Utilisateur chargé depuis la BDD                │
+│  9. SecurityContext mis à jour → accès autorisé     │
+└─────────────────────────────────────────────────────┘
+```
+
+**Structure d'un token JWT :**
+```
+HEADER.PAYLOAD.SIGNATURE
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbi4uIn0.abc123
+```
+
+- **Header** : algorithme (HS256)
+- **Payload** : email, rôle, expiration (données non chiffrées, juste encodées Base64)
+- **Signature** : hash HMAC-SHA256 avec la clé secrète → garantit l'intégrité
+
+---
+
+## 🧪 Lancer les tests
+
+```bash
+mvn test
+```
+
+Tests couverts :
+- Inscription (nominal + email dupliqué)
+- Connexion (nominal + mauvais identifiants)
+- Lecture (liste + par ID + ID inexistant)
+- Mise à jour (nominal + hachage mot de passe)
+- Suppression (nominal + ID inexistant)
+
+---
+
+## 📁 Structure du projet
+
+```
+user-api/
+├── src/
+│   ├── main/
+│   │   ├── java/com/kfokam/userapi/
+│   │   │   ├── UserApiApplication.java         ← Point d'entrée
+│   │   │   ├── config/
+│   │   │   │   ├── SecurityConfig.java         ← Config Spring Security + JWT
+│   │   │   │   ├── SwaggerConfig.java          ← Config Swagger avec Bearer JWT
+│   │   │   │   └── DataInitializer.java        ← Données de démo
+│   │   │   ├── security/
+│   │   │   │   ├── JwtService.java             ← Génération/validation JWT
+│   │   │   │   ├── JwtAuthenticationFilter.java← Filtre HTTP JWT
+│   │   │   │   └── JwtAuthEntryPoint.java      ← Réponse 401 JSON
+│   │   │   ├── controller/
+│   │   │   │   ├── AuthController.java         ← /auth/register + /auth/login
+│   │   │   │   └── UserController.java         ← CRUD utilisateurs
+│   │   │   ├── service/
+│   │   │   │   ├── AuthService.java            ← Logique inscription/connexion
+│   │   │   │   └── UserService.java            ← Logique CRUD
+│   │   │   ├── repository/
+│   │   │   │   └── UserRepository.java         ← Accès BDD
+│   │   │   ├── model/
+│   │   │   │   ├── User.java                   ← Entité JPA + UserDetails
+│   │   │   │   └── Role.java                   ← Enum ROLE_USER / ROLE_ADMIN
+│   │   │   ├── dto/
+│   │   │   │   ├── UserDTOs.java               ← Tous les DTOs
+│   │   │   │   └── ApiResponse.java            ← Wrapper de réponse
+│   │   │   └── exception/
+│   │   │       ├── UserNotFoundException.java
+│   │   │       ├── EmailAlreadyExistsException.java
+│   │   │       └── GlobalExceptionHandler.java
+│   │   └── resources/
+│   │       └── application.properties
+│   └── test/
+│       └── java/com/kfokam/userapi/
+│           └── UserApiTest.java                ← 10 tests unitaires
+├── pom.xml
+└── README.md
+```
+
+---
+
+## 👤 Auteur
+
+**KFOKAM48** — Projet de formation Java Spring Boot
+
+---
+
+*Sécurisé avec 🔐 Spring Security + JWT*
