@@ -50,8 +50,8 @@ public class DataInitializer {
 
                 // Compte administrateur
                 userRepository.save(User.builder()
-                        .nom("Administrateur KFOKAM48")
-                        .email("admin@kfokam.dev")
+                        .nom("KPAMBA-RALLE Hypolite")
+                        .email("kpambahypolite1@gmail.com")
                         .motDePasse(passwordEncoder.encode("Admin@1234"))
                         .role(Role.ROLE_ADMIN)
                         .actif(true)
@@ -59,8 +59,8 @@ public class DataInitializer {
 
                 // Utilisateurs standards
                 userRepository.save(User.builder()
-                        .nom("Alice Martin")
-                        .email("alice@email.com")
+                        .nom("MBAINAISSEM Gustave")
+                        .email("gustave@mail.com")
                         .motDePasse(passwordEncoder.encode("Password@1"))
                         .role(Role.ROLE_USER)
                         .actif(true)
@@ -73,11 +73,6 @@ public class DataInitializer {
                         .role(Role.ROLE_USER)
                         .actif(true)
                         .build());
-
-                log.info("3 utilisateurs de démonstration créés.");
-                log.info("Admin  → admin@kfokam.dev / Admin@1234");
-                log.info("User 1 → alice@email.com  / Password@1");
-                log.info("User 2 → bob@email.com    / Password@2");
             }
         };
     }
