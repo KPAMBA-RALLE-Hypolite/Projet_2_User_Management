@@ -24,7 +24,7 @@ import java.util.List;
  * </ul>
  *
  * <p>URL Swagger : <a href="http://localhost:8080/swagger-ui.html">
- * http://localhost:8080/swagger-ui.html</a></p>
+ * http://localhost:8088/swagger-ui.html</a></p>
  *
  * @author KFOKAM48
  * @version 1.0
@@ -93,7 +93,7 @@ public class SwaggerConfig {
      */
     private Server buildLocalServer() {
         Server server = new Server();
-        server.setUrl("http://localhost:8080");
+        server.setUrl("http://localhost:8088");
         server.setDescription("Serveur de développement local");
         return server;
     }

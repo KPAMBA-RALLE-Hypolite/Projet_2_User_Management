@@ -70,6 +70,7 @@ public class SecurityConfig {
                     .requestMatchers(
                             "/v3/api-docs/**",
                             "/swagger-ui/**",
+                            "/api-docs/**",
                             "/swagger-ui.html"
                     ).permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
